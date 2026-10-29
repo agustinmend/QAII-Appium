@@ -2,19 +2,19 @@ class AlarmPage {
   
   // 🔹 Selectores compatibles con emulador local y dispositivos reales BrowserStack (Android 11, 12, 13, 14)
   get alarmTab() { 
-    return $('//android.widget.FrameLayout[@content-desc="Alarm" or @content-desc="Alarma"] | //*[@resource-id="com.google.android.deskclock:id/tab_menu_alarm"] | //*[@resource-id="com.google.android.deskclock:id/navigation_bar_item_icon_container"] | ~Alarm | ~Alarma'); 
+    return $('//*[@content-desc="Alarm" or @content-desc="Alarma" or @text="Alarm" or @text="Alarma" or @resource-id="com.google.android.deskclock:id/tab_menu_alarm" or @resource-id="com.google.android.deskclock:id/navigation_bar_item_icon_container"]'); 
   }
 
   get addButton() { 
-    return $('//*[@resource-id="com.google.android.deskclock:id/fab"] | ~Add alarm | ~Agregar alarma | //*[@content-desc="Add alarm" or @content-desc="Agregar alarma"]'); 
+    return $('//*[@resource-id="com.google.android.deskclock:id/fab" or @content-desc="Add alarm" or @content-desc="Agregar alarma" or @content-desc="Add" or @content-desc="Agregar"]'); 
   }
 
   get okBtn() { 
-    return $('id=com.google.android.deskclock:id/material_timepicker_ok_button, //*[@text="OK" or @text="Aceptar"]'); 
+    return $('//*[@resource-id="com.google.android.deskclock:id/material_timepicker_ok_button" or @text="OK" or @text="Aceptar"]'); 
   }
 
   get cancelBtn() { 
-    return $('id=com.google.android.deskclock:id/material_timepicker_cancel_button, //*[@text="Cancel" or @text="Cancelar"]'); 
+    return $('//*[@resource-id="com.google.android.deskclock:id/material_timepicker_cancel_button" or @text="Cancel" or @text="Cancelar"]'); 
   }
 
   // Selector dinámico para la hora/minuto
@@ -35,14 +35,14 @@ class AlarmPage {
   }
 
   deleteBtn() {
-    return $('android=new UiSelector().resourceId("com.google.android.deskclock:id/delete_button"), //*[@resource-id="com.google.android.deskclock:id/delete"]');
+    return $('//*[@resource-id="com.google.android.deskclock:id/delete_button" or @resource-id="com.google.android.deskclock:id/delete" or @content-desc="Delete" or @content-desc="Eliminar"]');
   }
 
   // 🔹 Métodos de acción
   async openAlarmTab() {
     // Si aparece diálogo de permisos de notificaciones del sistema en Android 13/14
     try {
-      const allowBtn = await $('id=com.android.permissioncontroller:id/permission_allow_button, //*[@text="Allow" or @text="Permitir"]');
+      const allowBtn = await $('//*[@resource-id="com.android.permissioncontroller:id/permission_allow_button" or @text="Allow" or @text="Permitir"]');
       if (await allowBtn.isDisplayed()) {
         await allowBtn.click();
       }
@@ -56,9 +56,15 @@ class AlarmPage {
     await this.addButton.waitForDisplayed({ timeout: 10000 });
     await this.addButton.click();
 
-    await this.hourElement(hour).click();
-    await this.minuteElement(minute).click();
+    const hourEl = this.hourElement(hour);
+    await hourEl.waitForDisplayed({ timeout: 10000 });
+    await hourEl.click();
 
+    const minEl = this.minuteElement(minute);
+    await minEl.waitForDisplayed({ timeout: 10000 });
+    await minEl.click();
+
+    await this.okBtn.waitForDisplayed({ timeout: 10000 });
     await this.okBtn.click();
   }
 
@@ -71,24 +77,31 @@ class AlarmPage {
   async cancelAlarm(hour, minute) {
     await this.addButton.waitForDisplayed({ timeout: 10000 });
     await this.addButton.click();
-    await this.hourElement(hour).click();
-    await this.minuteElement(minute).click();
 
+    const hourEl = this.hourElement(hour);
+    await hourEl.waitForDisplayed({ timeout: 10000 });
+    await hourEl.click();
+
+    const minEl = this.minuteElement(minute);
+    await minEl.waitForDisplayed({ timeout: 10000 });
+    await minEl.click();
+
+    await this.cancelBtn.waitForDisplayed({ timeout: 10000 });
     await this.cancelBtn.click();
   }
 
   async deleteAlarm(time, position) {
     const alarm = await this.alarmWithTime(time);
+    await alarm.waitForDisplayed({ timeout: 10000 });
     await expect(alarm).toBeDisplayed();
 
     const expand = await this.expandAlarm(position);
-    if (await expand.isDisplayed()) {
+    if (await expand.isDisplayed().catch(() => false)) {
       await expand.click();
-      await driver.pause(2000);
+      await driver.pause(1500);
     }
 
     const delBtn = await this.deleteBtn();
-    await driver.pause(2000);
     await delBtn.waitForDisplayed({ timeout: 10000 });
     await delBtn.click();
   }

@@ -4,7 +4,7 @@ import AlarmPage from '../../pageObjects/alarmPage.js'
 describe('App de Alarma en Android', () => {
 
   it('Validar que se abra la app de Reloj', async () => {
-    await AlarmPage.alarmTab.waitForDisplayed({ timeout: 5000 });
+    await AlarmPage.alarmTab.waitForDisplayed({ timeout: 10000 });
     await expect(AlarmPage.alarmTab).toBeDisplayed();
   });
 

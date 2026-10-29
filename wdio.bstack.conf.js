@@ -81,7 +81,7 @@ exports.config = {
             await driver.pause(2500);
 
             // Aceptar diálogo de notificación de Android 13/14 si aparece
-            const allowBtn = await $('id=com.android.permissioncontroller:id/permission_allow_button, //*[@text="Allow" or @text="Permitir"]');
+            const allowBtn = await $('//*[@resource-id="com.android.permissioncontroller:id/permission_allow_button" or @text="Allow" or @text="Permitir"]');
             if (await allowBtn.isDisplayed().catch(() => false)) {
                 await allowBtn.click();
             }
@@ -93,11 +93,14 @@ exports.config = {
     beforeTest: async function () {
         try {
             await driver.activateApp('com.google.android.deskclock');
+            await driver.pause(1000);
             // Aceptar diálogo de permisos si salta entre tests
-            const allowBtn = await $('id=com.android.permissioncontroller:id/permission_allow_button, //*[@text="Allow" or @text="Permitir"]');
+            const allowBtn = await $('//*[@resource-id="com.android.permissioncontroller:id/permission_allow_button" or @text="Allow" or @text="Permitir"]');
             if (await allowBtn.isDisplayed().catch(() => false)) {
                 await allowBtn.click();
             }
-        } catch (e) {}
+        } catch (err) {
+            // Ignorar
+        }
     }
 };
