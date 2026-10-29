@@ -12,7 +12,7 @@ if (!appId && fs.existsSync(bstackAppInfoPath)) {
             appId = appInfo.app_url;
         }
     } catch (e) {
-        // Ignorar error de parseo si falla
+        // Ignorar
     }
 }
 
@@ -33,15 +33,13 @@ exports.config = {
     ],
     exclude: [],
 
-    // En cuentas Free Trial solo se permite 1 ejecución concurrente
+    // 1 ejecución concurrente para cuentas Free Trial
     maxInstances: 1,
 
     capabilities: [{
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
         'appium:app': appId,
-        'appium:appPackage': 'com.google.android.deskclock',
-        'appium:appActivity': 'com.android.deskclock.DeskClock',
         'appium:autoGrantPermissions': true,
         'appium:newCommandTimeout': 300,
         
@@ -75,14 +73,24 @@ exports.config = {
         timeout: 60000
     },
 
-    // Hook para asegurar que la app del Reloj esté abierta al iniciar cada suite
+    // Activar la app preinstalada del Reloj Google en el Pixel
     before: async function () {
+        console.log('⏰ Activando app de Reloj Google (com.google.android.deskclock)...');
         try {
-            console.log('⏰ Activando app de Reloj Google (com.google.android.deskclock)...');
             await driver.activateApp('com.google.android.deskclock');
             await driver.pause(2000);
         } catch (err) {
-            console.log('ℹ️ La app ya se encuentra activa en el dispositivo.');
+            try {
+                await driver.execute('mobile: activateApp', { bundleId: 'com.google.android.deskclock' });
+            } catch (e) {
+                console.log('ℹ️ Continuando...');
+            }
         }
+    },
+
+    beforeTest: async function () {
+        try {
+            await driver.activateApp('com.google.android.deskclock');
+        } catch (e) {}
     }
 };
