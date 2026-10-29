@@ -17,7 +17,7 @@ if (!appId && fs.existsSync(bstackAppInfoPath)) {
 }
 
 if (!appId) {
-    appId = 'bs://sample-app';
+    appId = 'GoogleClockApp';
 }
 
 console.log(`[BrowserStack Config] Utilizando app: ${appId}`);
@@ -40,6 +40,8 @@ exports.config = {
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
         'appium:app': appId,
+        'appium:appPackage': 'com.google.android.deskclock',
+        'appium:appActivity': 'com.android.deskclock.DeskClock',
         'appium:autoGrantPermissions': true,
         'appium:newCommandTimeout': 300,
         
@@ -73,28 +75,21 @@ exports.config = {
         timeout: 60000
     },
 
-    // Activar la app preinstalada del Reloj Google en el Pixel
     before: async function () {
-        console.log('⏰ Activando app de Reloj Google (com.google.android.deskclock)...');
+        console.log('⏰ Preparando app de Reloj Google...');
         try {
-            await driver.activateApp('com.google.android.deskclock');
-            await driver.pause(2500);
-
-            // Aceptar diálogo de notificación de Android 13/14 si aparece
+            await driver.pause(2000);
             const allowBtn = await $('//*[@resource-id="com.android.permissioncontroller:id/permission_allow_button" or @text="Allow" or @text="Permitir"]');
             if (await allowBtn.isDisplayed().catch(() => false)) {
                 await allowBtn.click();
             }
         } catch (err) {
-            console.log('ℹ️ Continuando...');
+            // Ignorar
         }
     },
 
     beforeTest: async function () {
         try {
-            await driver.activateApp('com.google.android.deskclock');
-            await driver.pause(1000);
-            // Aceptar diálogo de permisos si salta entre tests
             const allowBtn = await $('//*[@resource-id="com.android.permissioncontroller:id/permission_allow_button" or @text="Allow" or @text="Permitir"]');
             if (await allowBtn.isDisplayed().catch(() => false)) {
                 await allowBtn.click();
