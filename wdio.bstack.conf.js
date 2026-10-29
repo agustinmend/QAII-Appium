@@ -78,19 +78,26 @@ exports.config = {
         console.log('⏰ Activando app de Reloj Google (com.google.android.deskclock)...');
         try {
             await driver.activateApp('com.google.android.deskclock');
-            await driver.pause(2000);
-        } catch (err) {
-            try {
-                await driver.execute('mobile: activateApp', { bundleId: 'com.google.android.deskclock' });
-            } catch (e) {
-                console.log('ℹ️ Continuando...');
+            await driver.pause(2500);
+
+            // Aceptar diálogo de notificación de Android 13/14 si aparece
+            const allowBtn = await $('id=com.android.permissioncontroller:id/permission_allow_button, //*[@text="Allow" or @text="Permitir"]');
+            if (await allowBtn.isDisplayed().catch(() => false)) {
+                await allowBtn.click();
             }
+        } catch (err) {
+            console.log('ℹ️ Continuando...');
         }
     },
 
     beforeTest: async function () {
         try {
             await driver.activateApp('com.google.android.deskclock');
+            // Aceptar diálogo de permisos si salta entre tests
+            const allowBtn = await $('id=com.android.permissioncontroller:id/permission_allow_button, //*[@text="Allow" or @text="Permitir"]');
+            if (await allowBtn.isDisplayed().catch(() => false)) {
+                await allowBtn.click();
+            }
         } catch (e) {}
     }
 };
