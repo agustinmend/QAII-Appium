@@ -16,12 +16,11 @@ if (!appId && fs.existsSync(bstackAppInfoPath)) {
     }
 }
 
-// Si no se obtuvo app_url, usar el custom_id 'GoogleClockApp'
 if (!appId) {
-    appId = 'GoogleClockApp';
+    appId = 'bs://sample-app';
 }
 
-console.log(`[BrowserStack Config] Utilizando appId para las pruebas: ${appId}`);
+console.log(`[BrowserStack Config] Utilizando app: ${appId}`);
 
 exports.config = {
     user: process.env.BROWSERSTACK_USERNAME,
@@ -34,13 +33,15 @@ exports.config = {
     ],
     exclude: [],
 
-    // En cuentas Free Trial solo se permite 1 dispositivo simultáneo
+    // En cuentas Free Trial solo se permite 1 ejecución concurrente
     maxInstances: 1,
 
     capabilities: [{
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
         'appium:app': appId,
+        'appium:appPackage': 'com.google.android.deskclock',
+        'appium:appActivity': 'com.android.deskclock.DeskClock',
         'appium:autoGrantPermissions': true,
         'appium:newCommandTimeout': 300,
         maxInstances: 1,
@@ -64,7 +65,6 @@ exports.config = {
 
     services: [
         ['browserstack', {
-            app: appId,
             browserstackLocal: false
         }]
     ],
@@ -74,5 +74,16 @@ exports.config = {
     mochaOpts: {
         ui: 'bdd',
         timeout: 60000
+    },
+
+    // Hook para asegurar que la app del Reloj esté abierta al iniciar cada suite
+    before: async function () {
+        try {
+            console.log('⏰ Activando app de Reloj Google (com.google.android.deskclock)...');
+            await driver.activateApp('com.google.android.deskclock');
+            await driver.pause(2000);
+        } catch (err) {
+            console.log('ℹ️ La app ya se encuentra activa en el dispositivo.');
+        }
     }
 };
