@@ -1,10 +1,32 @@
-// Configuración de WebdriverIO para ejecutar en BrowserStack App Automate
+const fs = require('fs');
+const path = require('path');
+
+// Intentar leer el ID de la app subida desde .bstack-app.json
+let appId = process.env.BROWSERSTACK_APP_ID;
+const bstackAppInfoPath = path.resolve(__dirname, '.bstack-app.json');
+
+if (!appId && fs.existsSync(bstackAppInfoPath)) {
+    try {
+        const appInfo = JSON.parse(fs.readFileSync(bstackAppInfoPath, 'utf8'));
+        if (appInfo.app_url) {
+            appId = appInfo.app_url;
+        }
+    } catch (e) {
+        // Ignorar error de parseo si falla
+    }
+}
+
+// Si no se obtuvo app_url, usar el custom_id 'GoogleClockApp'
+if (!appId) {
+    appId = 'GoogleClockApp';
+}
+
+console.log(`[BrowserStack Config] Utilizando appId para las pruebas: ${appId}`);
+
 exports.config = {
-    // Credenciales de BrowserStack (se toman de variables de entorno)
     user: process.env.BROWSERSTACK_USERNAME,
     key: process.env.BROWSERSTACK_ACCESS_KEY,
 
-    // Servidor de BrowserStack
     hostname: 'hub.browserstack.com',
 
     specs: [
@@ -12,18 +34,17 @@ exports.config = {
     ],
     exclude: [],
 
+    // En cuentas Free Trial solo se permite 1 dispositivo simultáneo
     maxInstances: 1,
 
     capabilities: [{
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
-        // 'app' puede ser el hashed ID 'bs://...', el custom_id 'GoogleClockApp',
-        // o la ruta local al APK (el servicio de BrowserStack lo sube automáticamente)
-        'appium:app': process.env.BROWSERSTACK_APP_ID || './GoogleClock.apk',
+        'appium:app': appId,
         'appium:autoGrantPermissions': true,
         'appium:newCommandTimeout': 300,
+        maxInstances: 1,
         
-        // Opciones específicas de BrowserStack
         'bstack:options': {
             deviceName: 'Google Pixel 8',
             platformVersion: '14.0',
@@ -43,7 +64,7 @@ exports.config = {
 
     services: [
         ['browserstack', {
-            app: process.env.BROWSERSTACK_APP_ID || './GoogleClock.apk',
+            app: appId,
             browserstackLocal: false
         }]
     ],

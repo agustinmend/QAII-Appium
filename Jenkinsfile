@@ -1,10 +1,7 @@
 pipeline {
     agent any
 
-    // Variables de entorno para la ejecución
     environment {
-        // En Jenkins se configuran estas credenciales en:
-        // Dashboard -> Manage Jenkins -> Credentials -> System -> Global credentials -> Add Credentials (Secret text)
         BROWSERSTACK_USERNAME   = credentials('BROWSERSTACK_USERNAME')
         BROWSERSTACK_ACCESS_KEY = credentials('BROWSERSTACK_ACCESS_KEY')
         BROWSERSTACK_BUILD_NAME = "Jenkins-Build-${BUILD_NUMBER}"
@@ -33,22 +30,11 @@ pipeline {
         stage('Upload App to BrowserStack') {
             steps {
                 script {
-                    echo "Subiendo APK a BrowserStack App Automate..."
+                    echo "Subiendo APK a BrowserStack App Automate con Node.js..."
                     if (isUnix()) {
-                        sh '''
-                            RESPONSE=$(curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
-                                -X POST "https://api-cloud.browserstack.com/app-automate/upload" \
-                                -F "file=@GoogleClock.apk" \
-                                -F "custom_id=GoogleClockApp")
-                            echo "Respuesta BrowserStack: $RESPONSE"
-                        '''
+                        sh 'node upload-app.js'
                     } else {
-                        bat '''
-                            curl -s -u "%BROWSERSTACK_USERNAME%:%BROWSERSTACK_ACCESS_KEY%" ^
-                                -X POST "https://api-cloud.browserstack.com/app-automate/upload" ^
-                                -F "file=@GoogleClock.apk" ^
-                                -F "custom_id=GoogleClockApp"
-                        '''
+                        bat 'node upload-app.js'
                     }
                 }
             }
@@ -57,7 +43,7 @@ pipeline {
         stage('Run Appium Tests') {
             steps {
                 script {
-                    echo "Ejecutando pruebas de Appium en dispositivos BrowserStack..."
+                    echo "Ejecutando pruebas de Appium en BrowserStack..."
                     if (isUnix()) {
                         sh 'npm run test:bstack'
                     } else {
