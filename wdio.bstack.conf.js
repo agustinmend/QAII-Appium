@@ -44,7 +44,6 @@ exports.config = {
         'appium:appActivity': 'com.android.deskclock.DeskClock',
         'appium:autoGrantPermissions': true,
         'appium:newCommandTimeout': 300,
-        maxInstances: 1,
         
         'bstack:options': {
             deviceName: 'Google Pixel 8',
