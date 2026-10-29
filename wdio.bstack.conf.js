@@ -1,26 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-// Intentar leer el ID de la app subida desde .bstack-app.json
-let appId = process.env.BROWSERSTACK_APP_ID;
-const bstackAppInfoPath = path.resolve(__dirname, '.bstack-app.json');
-
-if (!appId && fs.existsSync(bstackAppInfoPath)) {
-    try {
-        const appInfo = JSON.parse(fs.readFileSync(bstackAppInfoPath, 'utf8'));
-        if (appInfo.app_url) {
-            appId = appInfo.app_url;
-        }
-    } catch (e) {
-        // Ignorar
-    }
-}
-
-if (!appId) {
-    appId = 'GoogleClockApp';
-}
-
-console.log(`[BrowserStack Config] Utilizando app: ${appId}`);
+console.log('[BrowserStack Config] Usando Google Clock pre-instalado en el dispositivo BrowserStack.');
 
 exports.config = {
     user: process.env.BROWSERSTACK_USERNAME,
@@ -39,7 +17,6 @@ exports.config = {
     capabilities: [{
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
-        'appium:app': appId,
         'appium:appPackage': 'com.google.android.deskclock',
         'appium:appActivity': 'com.android.deskclock.DeskClock',
         'appium:autoGrantPermissions': true,

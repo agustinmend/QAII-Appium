@@ -27,19 +27,6 @@ pipeline {
             }
         }
 
-        stage('Upload App to BrowserStack') {
-            steps {
-                script {
-                    echo "Subiendo APK a BrowserStack App Automate con Node.js..."
-                    if (isUnix()) {
-                        sh 'node upload-app.js'
-                    } else {
-                        bat 'node upload-app.js'
-                    }
-                }
-            }
-        }
-
         stage('Run Appium Tests') {
             steps {
                 script {
